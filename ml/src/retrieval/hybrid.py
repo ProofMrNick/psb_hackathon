@@ -1,19 +1,102 @@
 
-import re
 import numpy as np
 
 from src.processing.dialogue import parse_dialogue
 from src.retrieval.embeddings import normalize
 
 
-STOP_WORDS = set(
-    "какой какая какие какое сколько можно нужно "
-    "должен должны если чтобы этот этого нашего нашей "
-    "пользователь ассистент подскажите пожалуйста "
-    "договор договору договора согласно очень когда "
-    "какого какому более менее после перед только "
-    "вообще".split()
-)
+def prepare_query(question: str) -> str:
+    """Use the last user question for retrieval."""
+    _, last_question, _ = parse_dialogue(question)
+    return last_question.strip() or question.strip()
+
+
+def dense_search(
+    query,
+    matrix,
+    embedder,
+    top_k=30,
+):
+    """Return (chunk_index, cosine_similarity)."""
+    if top_k <= 0 or len(matrix) == 0:
+        return []
+
+    vector = normalize(embedder.encode([query]))[0]
+    scores = matrix @ vector
+
+    indices = np.argsort(-scores, kind="stable")[:top_k]
+
+    return [
+        (int(idx), float(scores[idx]))
+        for idx in indices
+    ]
+
+
+def bm25_search(
+    query,
+    sparse_retriever,
+    top_k=30,
+):
+    """Return (chunk_index, BM25_score)."""
+    results = sparse_retriever.search(
+        query,
+        top_k=top_k,
+    )
+
+    return [
+        (result.index, result.score)
+        for result in results
+    ]
+
+
+def reciprocal_rank_fusion(
+    dense_results,
+    sparse_results,
+    rrf_k=60,
+):
+    """
+    Fuse ranked lists using Reciprocal Rank Fusion.
+
+    Rank numbering starts at 1.
+    """
+    if rrf_k <= 0:
+        raise ValueError("rrf_k must be positive")
+
+    fused = {}
+
+    for source, results in (
+        ("dense", dense_results),
+        ("bm25", sparse_results),
+    ):
+        for rank, (idx, score) in enumerate(
+            results, start=1
+        ):
+            if idx not in fused:
+                fused[idx] = {
+                    "index": idx,
+                    "dense_rank": None,
+                    "bm25_rank": None,
+                    "dense_score": None,
+                    "bm25_score": None,
+                    "rrf_score": 0.0,
+                }
+
+            fused[idx][f"{source}_rank"] = rank
+            fused[idx][f"{source}_score"] = score
+            fused[idx]["rrf_score"] += (
+                1.0 / (rrf_k + rank)
+            )
+
+    return sorted(
+        fused.values(),
+        key=lambda item: (
+            -item["rrf_score"],
+            item["dense_rank"]
+            if item["dense_rank"] is not None
+            else float("inf"),
+            item["index"],
+        ),
+    )
 
 
 def search_with_scores(
@@ -21,123 +104,63 @@ def search_with_scores(
     chunks,
     matrix,
     embedder,
+    sparse_retriever,
     top_k=6,
+    candidate_k=30,
+    rrf_k=60,
 ):
-    """
-    Retrieve chunks with detailed scoring information.
-
-    Returns:
-        list[dict] with:
-            chunk
-            dense_score
-            keyword_bonus
-            entity_bonus
-            total_score
-            rank
-    """
-    if not chunks:
+    """Return hybrid results with detailed diagnostics."""
+    if not chunks or top_k <= 0:
         return []
 
-    history, last, all_text = parse_dialogue(query)
-
-    entities = [
-        entity.lower()
-        for entity in (
-            re.findall(r"«([^»]{3,60})»", query)
-            + re.findall(
-                r"[А-ЯA-Z]{1,3}-\d{2}/\d{4}",
-                query
-            )
+    if len(matrix) != len(chunks):
+        raise ValueError(
+            "Dense index and chunks have different sizes"
         )
-    ]
 
-    # 1. Dense retrieval
-    search_query = f"{last} {' '.join(entities)}"
-
-    query_vec = normalize(
-        embedder.encode([search_query])
-    )[0]
-
-    dense_scores = matrix @ query_vec
-
-    # 2. Keyword matching
-    stems = {
-        word[:6]
-        for word in re.findall(
-            r"[а-яёa-z]{4,}",
-            all_text.lower()
+    if len(sparse_retriever.chunks) != len(chunks):
+        raise ValueError(
+            "Sparse index and chunks have different sizes"
         )
-        if word not in STOP_WORDS
-    }
 
-    keyword_bonuses = np.zeros(
+    query_text = prepare_query(query)
+
+    candidate_k = min(
         len(chunks),
-        dtype=np.float32
+        max(candidate_k, top_k),
     )
 
-    entity_bonuses = np.zeros(
-        len(chunks),
-        dtype=np.float32
+    dense_results = dense_search(
+        query_text,
+        matrix,
+        embedder,
+        top_k=candidate_k,
     )
 
-    for i, chunk in enumerate(chunks):
-        hay = chunk["search"].lower()
-
-        if stems:
-            matches = sum(
-                stem in hay
-                for stem in stems
-            )
-
-            keyword_bonuses[i] = (
-                0.2 * matches / len(stems)
-            )
-
-        entity_bonuses[i] = 0.15 * sum(
-            bool(
-                re.search(
-                    re.escape(entity) + r"(?![а-яё])",
-                    hay
-                )
-            )
-            for entity in entities
-        )
-
-    # 3. Final scores
-    total_scores = (
-        dense_scores
-        + keyword_bonuses
-        + entity_bonuses
+    sparse_results = bm25_search(
+        query_text,
+        sparse_retriever,
+        top_k=candidate_k,
     )
 
-    # 4. Sort and return detailed results
-    top_indices = np.argsort(
-        -total_scores
-    )[:top_k]
+    fused = reciprocal_rank_fusion(
+        dense_results,
+        sparse_results,
+        rrf_k=rrf_k,
+    )
 
-    results = []
+    output = []
 
-    for rank, idx in enumerate(top_indices, start=1):
-        idx = int(idx)
-
-        results.append({
+    for rank, item in enumerate(
+        fused[:top_k], start=1
+    ):
+        output.append({
             "rank": rank,
-            "chunk": chunks[idx],
-            "dense_score": float(
-                dense_scores[idx]
-            ),
-            "keyword_bonus": float(
-                keyword_bonuses[idx]
-            ),
-            "entity_bonus": float(
-                entity_bonuses[idx]
-            ),
-            "total_score": float(
-                total_scores[idx]
-            ),
+            "chunk": chunks[item["index"]],
+            **item,
         })
 
-    return results
+    return output
 
 
 def search(
@@ -145,22 +168,21 @@ def search(
     chunks,
     matrix,
     embedder,
+    sparse_retriever,
     top_k=6,
+    candidate_k=30,
+    rrf_k=60,
 ):
-    """
-    Backward-compatible search.
-
-    Returns only chunks, as before.
-    """
+    """Return chunks only, for answer generation."""
     results = search_with_scores(
         query=query,
         chunks=chunks,
         matrix=matrix,
         embedder=embedder,
+        sparse_retriever=sparse_retriever,
         top_k=top_k,
+        candidate_k=candidate_k,
+        rrf_k=rrf_k,
     )
 
-    return [
-        result["chunk"]
-        for result in results
-    ]
+    return [item["chunk"] for item in results]
