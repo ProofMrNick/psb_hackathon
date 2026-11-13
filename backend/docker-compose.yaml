@@ -1,0 +1,4 @@
+# Deprecated.
+# The backend is now part of the four-service stack defined in ../compose.yaml.
+# Run it from the repository root:
+#   docker compose up --build
