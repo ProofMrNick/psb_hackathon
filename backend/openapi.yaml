@@ -1,0 +1,290 @@
+openapi: 3.1.0
+info:
+  title: Alfa SME Credit Decision API
+  version: 1.0.0
+  description: Canonical API for client application processing and the employee decision workspace.
+servers:
+  - url: http://localhost:5003/api
+security:
+  - bearerAuth: []
+tags:
+  - name: Auth
+  - name: Applications
+  - name: Employee
+paths:
+  /health:
+    get:
+      security: []
+      summary: Service health
+      responses:
+        '200': { description: Healthy }
+  /auth/register:
+    post:
+      security: []
+      tags: [Auth]
+      summary: Register a client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '200':
+          description: Registered
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+  /auth/login:
+    post:
+      security: []
+      tags: [Auth]
+      summary: Log in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string }
+                password: { type: string, format: password }
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+        '401': { $ref: '#/components/responses/Error' }
+  /products:
+    get:
+      security: []
+      summary: List products
+      responses:
+        '200':
+          description: Product catalogue
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Product' } }
+  /applications:
+    get:
+      tags: [Applications]
+      summary: List current client's applications
+      responses:
+        '200':
+          description: Applications
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Application' } }
+    post:
+      tags: [Applications]
+      summary: Create and orchestrate an application
+      description: Runs submission, enrichment and scoring before returning the resulting status.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubmitApplication' }
+      responses:
+        '201':
+          description: Submitted
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [local_id, global_id, status]
+                properties:
+                  local_id: { type: integer }
+                  global_id: { type: integer }
+                  status: { $ref: '#/components/schemas/ApplicationStatus' }
+                  warning: { type: [string, 'null'] }
+        '400': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+  /applications/{localId}:
+    get:
+      tags: [Applications]
+      summary: Get a client application
+      parameters: [{ $ref: '#/components/parameters/LocalId' }]
+      responses:
+        '200':
+          description: Application
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Application' }
+        '404': { $ref: '#/components/responses/Error' }
+  /applications/{localId}/history:
+    get:
+      tags: [Applications]
+      summary: Get application history
+      parameters: [{ $ref: '#/components/parameters/LocalId' }]
+      responses:
+        '200':
+          description: History
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/HistoryEvent' } }
+  /applications/{localId}/clarify:
+    post:
+      tags: [Applications]
+      summary: Add missing data and restart scoring
+      parameters: [{ $ref: '#/components/parameters/LocalId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fns_data: { type: object, additionalProperties: true }
+                bki_data: { type: object, additionalProperties: true }
+                internal_data: { type: object, additionalProperties: true }
+      responses:
+        '200': { description: Updated and rescored }
+        '409': { $ref: '#/components/responses/Error' }
+  /applications/{localId}/accept:
+    post:
+      tags: [Applications]
+      summary: Accept an approved offer
+      parameters: [{ $ref: '#/components/parameters/LocalId' }]
+      responses:
+        '200': { description: Accepted }
+        '409': { $ref: '#/components/responses/Error' }
+  /applications/{localId}/decline:
+    post:
+      tags: [Applications]
+      summary: Decline an approved offer
+      parameters: [{ $ref: '#/components/parameters/LocalId' }]
+      responses:
+        '200': { description: Cancelled }
+        '409': { $ref: '#/components/responses/Error' }
+  /bank/applications:
+    get:
+      tags: [Employee]
+      summary: Get employee queue
+      parameters:
+        - { name: status, in: query, schema: { oneOf: [{ $ref: '#/components/schemas/ApplicationStatus' }, { const: ALL }] } }
+        - { name: risk, in: query, schema: { enum: [ALL, LOW, MEDIUM, HIGH] } }
+        - { name: search, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: Filtered queue
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Application' } }
+                  total: { type: integer }
+  /bank/applications/{globalId}:
+    get:
+      tags: [Employee]
+      summary: Get employee application card
+      parameters: [{ $ref: '#/components/parameters/GlobalId' }]
+      responses:
+        '200': { description: Application, client, enrichment, scoring and history }
+        '404': { $ref: '#/components/responses/Error' }
+  /bank/applications/{globalId}/decision:
+    post:
+      tags: [Employee]
+      summary: Apply a manual or technical-user decision
+      parameters: [{ $ref: '#/components/parameters/GlobalId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Decision' }
+      responses:
+        '200': { description: Decision applied }
+        '400': { $ref: '#/components/responses/Error' }
+  /bank/applications/{globalId}/rescore:
+    post:
+      tags: [Employee]
+      summary: Restart enrichment and scoring
+      parameters: [{ $ref: '#/components/parameters/GlobalId' }]
+      responses:
+        '200': { description: Scoring completed or moved to manual review }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    LocalId: { name: localId, in: path, required: true, schema: { type: integer } }
+    GlobalId: { name: globalId, in: path, required: true, schema: { type: integer } }
+  responses:
+    Error:
+      description: Error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: { message: { type: string } }
+  schemas:
+    ApplicationStatus:
+      type: string
+      enum: [DRAFT, SUBMITTED, ENRICHMENT, SCORING, UNDER_REVIEW, NEED_MORE_INFO, APPROVED, COUNTEROFFER, DECLINED, ACCEPTED, CANCELLED]
+    RegisterRequest:
+      type: object
+      required: [username, password, inn, email, companyName]
+      properties:
+        username: { type: string }
+        password: { type: string, format: password, minLength: 8 }
+        inn: { type: string, pattern: '^(?:\\d{10}|\\d{12})$' }
+        email: { type: string, format: email }
+        companyName: { type: string }
+    AuthResponse:
+      type: object
+      properties:
+        token: { type: string }
+        role: { enum: [CLIENT, EMPLOYEE] }
+        user_info: { type: object, additionalProperties: true }
+    Product:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        interest_rate: { type: number }
+        duration: { type: integer }
+        min_amount: { type: integer }
+        max_amount: { type: integer }
+    SubmitApplication:
+      type: object
+      required: [loan_id, loan_sum, loan_duration]
+      properties:
+        loan_id: { type: integer }
+        loan_sum: { type: number }
+        loan_duration: { type: integer }
+        purpose: { enum: [WORKING_CAPITAL, EQUIPMENT, CURRENT_ACTIVITY] }
+    Application:
+      type: object
+      required: [global_id, local_id, status]
+      properties:
+        global_id: { type: integer }
+        local_id: { type: integer }
+        status: { $ref: '#/components/schemas/ApplicationStatus' }
+        inn: { type: string }
+        loan_sum: { type: number }
+        loan_duration: { type: integer }
+        loan_interest: { type: number }
+        risk_score: { type: [integer, 'null'] }
+        risk_level: { type: [string, 'null'], enum: [LOW, MEDIUM, HIGH, null] }
+        factors: { type: array, items: { type: object, additionalProperties: true } }
+        missing_fields: { type: array, items: { type: string } }
+    Decision:
+      type: object
+      required: [type]
+      properties:
+        type: { enum: [APPROVE, COUNTEROFFER, REQUEST_INFO, DECLINE] }
+        approvedAmount: { type: [number, 'null'] }
+        approvedTermMonths: { type: [integer, 'null'] }
+        approvedRate: { type: [number, 'null'] }
+        missingFields: { type: array, items: { type: string } }
+        reason: { type: [string, 'null'] }
+        comment: { type: [string, 'null'] }
+    HistoryEvent:
+      type: object
+      properties:
+        id: { type: integer }
+        application_global_id: { type: integer }
+        new_status: { $ref: '#/components/schemas/ApplicationStatus' }
+        timestamp: { type: string }
+        comment: { type: [string, 'null'] }
+        metadata: { type: object, additionalProperties: true }
