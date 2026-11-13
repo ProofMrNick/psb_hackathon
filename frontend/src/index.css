@@ -1,4 +1,27 @@
 
 :root {
-  
+    --color-text-dark: #222222;
+    --color-text-grey: #878787;
+    --color-bg-sidebar: #F7F7FA;
+    --color-light-grey: #C1C1C1;
+    --color-chat-selected: #E3E6F1;
+    --color-chat-message: #DFDCFF;
+    --color-dark-blue: #012178;
+
+    --th-peach: #F5CDC0;
+    --th-yellow: #F6E7AE;
+    --th-pink: #F5D4D6;
+    --th-purple: #ECBEE8;
+    --th-green: #C0F3D5;
+    --th-cyan: #B5E8E3;
+
+    --font: "Inter Tight", sans-serif;
+}
+
+html, body {
+    height: 100dvh;
+    width: 100dvh;
+    margin: 0;
+    padding: 0;
+    font-family: var(--font);
 }
