@@ -1,0 +1,40 @@
+
+#sidebar {
+    background-color: var(--color-bg-sidebar);
+    border: none;
+    border-radius: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 20px 0; 
+    color: var(--color-text-dark);
+}
+
+#main-logo {
+    padding: 0;
+    margin: 0;
+}
+
+.buttons {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 8px 0;
+}
+
+.btn {
+    display: flex;
+    gap: 0 5px;
+    font-size: 13px;
+}
+
+#chats-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+}
+
+/* ............ */

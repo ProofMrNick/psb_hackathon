@@ -1,9 +1,9 @@
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-import NewChat from './components/Chat.jsx';
+import NewChat from './components/NewChat.jsx';
 import Chat from './components/Chat.jsx';
-import Chat from './components/SplitView.jsx';
+import SplitView from './components/SplitView.jsx';
 import NotFound from './components/NotFound.jsx';
 
 
