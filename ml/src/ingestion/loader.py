@@ -10,7 +10,7 @@ def load_chunks(data_path: Path):
     if archive.exists() and not folder.exists():
         with zipfile.ZipFile(archive) as zf:
             # The archive must be trusted; do not extract arbitrary untrusted ZIPs.
-            zf.extractall(folder)
+            _safe_extract(archive, folder)
     elif not folder.exists():
         folder = data_path
 
@@ -20,7 +20,7 @@ def load_chunks(data_path: Path):
         if not lines:
             continue
         name = path.stem.split('__')[-1].replace('_', ' ').strip()
-        title = next((line for line in lines[:6] if '№' in line and len(line) < 180), name)
+        title = _title(lines, name)
         is_law = path.stem.lower().startswith('законы')
         limit, min_size = (1600, 700) if is_law else (1200, 450)
         buf, size, article = [], 0, ''
@@ -53,3 +53,21 @@ def load_chunks(data_path: Path):
             size += len(line) + 1
         flush()
     return chunks
+def _title(lines, fallback):
+    for line in lines[:6]:
+        if '№' in line and len(line) < 180:
+            return line
+    for line in lines[:6]:
+        if line.lower().startswith('источник:'):
+            return line[9:].strip()[:180]
+    return fallback
+
+
+def _safe_extract(archive, folder):
+    folder = folder.resolve()
+    with zipfile.ZipFile(archive) as zf:
+        for member in zf.namelist():
+            target = (folder / member).resolve()
+            if not str(target).startswith(str(folder)):
+                raise ValueError(f'Небезопасный путь в архиве: {member}')
+        zf.extractall(folder)

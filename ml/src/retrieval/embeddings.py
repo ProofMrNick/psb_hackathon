@@ -37,3 +37,6 @@ class Embedder:
                     self._model = self._model.half()
             return self._model.encode(texts, batch_size=16, convert_to_numpy=True,
                                       show_progress_bar=len(texts) > 32).astype('float32')
+    @property
+    def model_tag(self):
+        return 'bge-m3-512'
