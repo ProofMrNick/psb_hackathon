@@ -27,3 +27,13 @@ pip install -r requirements.txt
 
 # Запустить
 python solution.py
+```
+
+## Design
+- `config/settings.py`: environment-based settings
+- `src/ingestion`: document loading and chunking
+- `src/retrieval`: embeddings, cache and current retrieval
+- `src/processing`: dialogue parsing
+- `src/generation`: prompt and LLM client
+- `src/pipeline.py`: orchestration
+- `solution.py`: batch submission
