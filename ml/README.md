@@ -37,3 +37,48 @@ python solution.py
 - `src/generation`: prompt and LLM client
 - `src/pipeline.py`: orchestration
 - `solution.py`: batch submission
+
+## Evaluation
+
+- Вводить любой юридический вопрос в консоли.
+- Видеть top-k найденных фрагментов.
+- Смотреть similarity score каждого фрагмента.
+- Проверять, из какого документа взят фрагмент.
+- Сохранять результаты в JSON для дальнейшего анализа.
+
+Запуск из папки ml/
+```
+python evaluation/inspect_retrieval.py
+```
+Question: "Какой максимальный срок испытания для главного бухгалтера?"
+
+Примерно такой вывод (оценки условные):
+```
+RANK: 1
+CHUNK ID: chunk_000042
+DOCUMENT: Законы/Трудовой кодекс.txt
+TITLE: Трудовой кодекс | Статья 70
+
+SCORES:
+  Dense similarity: 0.8124
+  Keyword bonus:    0.1600
+  Entity bonus:     0.0000
+  TOTAL:            0.9724
+
+TEXT:
+Статья 70. Испытание при приеме на работу...
+Однократный поиск
+```
+Можно передать вопрос сразу в командной строке:
+```
+python evaluation/inspect_retrieval.py -q "Какой максимальный срок испытания для главного бухгалтера?"
+```
+Показать полный текст чанков
+```
+python evaluation/inspect_retrieval.py --full-text
+```
+Сохранить результаты в JSON
+```
+python evaluation/inspect_retrieval.py --save
+```
+Результаты сохранятся в `evaluation/results/`.
