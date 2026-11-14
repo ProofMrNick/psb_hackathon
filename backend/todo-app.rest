@@ -8,3 +8,14 @@ Content-Type: application/json
 {
   "message": "jopkaaa"
 }
+
+### GET HISTORY
+GET http://localhost:5003/api/v1/1/history
+
+### message
+POST http://localhost:5003/api/v1/1/user_message
+Content-Type: application/json
+
+{
+  "message": "jopkaaa"
+}

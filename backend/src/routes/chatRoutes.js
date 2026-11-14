@@ -11,12 +11,13 @@ router.post('/new_chat', (req, res) => {
 })
 
 router.get('/chats', (req, res) => {
-    //returns id's and titles of all chats
+    //returns id's and titles of all chats in the form of array
 
     const getChats = db.prepare('SELECT id, title FROM chats WHERE user_id = ?')
-    const result = getChats.all(0) // user_id is still 0
+    const chat_names = getChats.all(0) // user_id is still 0
+
     
-    res.send(result)
+    res.json({chat_names})
 })
 
 router.get('/:chat_id/history', (req, res) => {
