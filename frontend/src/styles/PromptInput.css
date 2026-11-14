@@ -1,8 +1,7 @@
 
 #PromptInput {
-    grid-area: input;
-    height: 60px;
     width: 75%;
+    min-height: 60px;
     border-radius: 30px;
     border: none;
     background-color: var(--color-white);
@@ -10,34 +9,47 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    gap: 0 10px;
+    gap: 10px;
     box-shadow: 0.2px 0.2px 40px 0.5px rgba(0, 0, 0, 0.08);
-    padding: 0 10px 0 calc(10px + 50px + 10px);
+    padding: 5px 10px;
+    box-sizing: border-box;
 }
 
-    .PromptInput-text-overlow {
-        flex-direction: column;
-        justify-content: flex-end;
-    }
+.PromptInput-text-overflow {
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+    border-radius: 20px;
+    padding: 16px;
+}
 
-#hidden {
-    visibility: hidden;
+.PromptInput-text-overflow #send {
+    align-self: flex-end;
 }
 
 #input-line {
+    flex: 1;
     height: 50px;
-    width: calc(100% - 10px - 10px - 50px - 10px - 50px - 10px);
-    font-size: 17px;
+    max-height: 200px;
+    overflow-y: auto;
+    resize: none;
+    font-size: 15px;
+    line-height: 24px;
+    font-family: inherit;
     border: none;
+    background: transparent;
+    padding: 13px 10px;
+    box-sizing: border-box;
 }
 
-    input:focus {
-        outline: none;
-    }
+textarea:focus {
+    outline: none;
+}
 
 #send {
     height: 40px;
     width: 40px;
+    flex-shrink: 0;
     border-radius: 50%;
     background-color: var(--color-light-grey);
     color: var(--color-text-grey);
@@ -45,5 +57,12 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    cursor: auto;
+    
+}
+
+#send.send-active {
+    background-color: var(--color-dark-blue);
+    color: var(--color-white);
     cursor: pointer;
 }

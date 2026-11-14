@@ -50,6 +50,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: stretch;
+    width: 100%;
 }
 
 #your-chats {
@@ -69,15 +70,17 @@
 
 .chat-elem {
     margin: 0;
-    padding: 8px 12px;
+    padding: 8px 0px 8px 4px;
     font-size: 15px;
     border-radius: 8px;
     background-color: none;
-    /*box-sizing: border-box;*/
     width: 100%;
     cursor: pointer;
+    box-sizing: border-box;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
-
 
     .chat-elem-selected {
         background-color: var(--color-chat-selected);

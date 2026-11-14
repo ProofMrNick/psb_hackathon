@@ -39,7 +39,7 @@ function ChatLoader() {
 
 
 function SideBar() {
-    const chat = {id: 0, title: "Изменения в законе"};
+    const chat = {id: 0, title: "Изменения в налоговом законодательстве осенью 2026 года"};
 
     return (
         <div id="Sidebar">
