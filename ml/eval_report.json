@@ -1,0 +1,567 @@
+{
+  "summary": {
+    "dense": {
+      "hit": 0.9411764705882353,
+      "recall": 0.9411764705882353,
+      "mrr": 0.6441176470588235,
+      "n": 17
+    },
+    "bm25": {
+      "hit": 0.9411764705882353,
+      "recall": 0.9411764705882353,
+      "mrr": 0.7303921568627451,
+      "n": 17
+    },
+    "hybrid": {
+      "hit": 0.9411764705882353,
+      "recall": 0.9411764705882353,
+      "mrr": 0.6505602240896359,
+      "n": 17
+    },
+    "bm25_stem": {
+      "hit": 0.9411764705882353,
+      "recall": 0.9411764705882353,
+      "mrr": 0.7303921568627451,
+      "n": 17
+    },
+    "hybrid_stem": {
+      "hit": 0.9411764705882353,
+      "recall": 0.9411764705882353,
+      "mrr": 0.6505602240896359,
+      "n": 17
+    }
+  },
+  "per_question": [
+    {
+      "id": "1",
+      "abstain": false,
+      "methods": {
+        "dense": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "bm25": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "hybrid": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "bm25_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "hybrid_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        }
+      }
+    },
+    {
+      "id": "2",
+      "abstain": false,
+      "methods": {
+        "dense": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "bm25": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "hybrid": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "bm25_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "hybrid_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        }
+      }
+    },
+    {
+      "id": "3",
+      "abstain": true
+    },
+    {
+      "id": "4",
+      "abstain": false,
+      "methods": {
+        "dense": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "bm25": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "hybrid": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "bm25_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "hybrid_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        }
+      }
+    },
+    {
+      "id": "5",
+      "abstain": false,
+      "methods": {
+        "dense": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "bm25": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "hybrid": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "bm25_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "hybrid_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        }
+      }
+    },
+    {
+      "id": "6",
+      "abstain": false,
+      "methods": {
+        "dense": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "bm25": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "hybrid": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "bm25_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "hybrid_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        }
+      }
+    },
+    {
+      "id": "7",
+      "abstain": false,
+      "methods": {
+        "dense": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.25
+        },
+        "bm25": {
+          "hit": 0.0,
+          "recall": 0.0,
+          "rr": 0.16666666666666666
+        },
+        "hybrid": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.3333333333333333
+        },
+        "bm25_stem": {
+          "hit": 0.0,
+          "recall": 0.0,
+          "rr": 0.16666666666666666
+        },
+        "hybrid_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.3333333333333333
+        }
+      }
+    },
+    {
+      "id": "8",
+      "abstain": false,
+      "methods": {
+        "dense": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.2
+        },
+        "bm25": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "hybrid": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.3333333333333333
+        },
+        "bm25_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "hybrid_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.3333333333333333
+        }
+      }
+    },
+    {
+      "id": "9",
+      "abstain": false,
+      "methods": {
+        "dense": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "bm25": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "hybrid": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "bm25_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "hybrid_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        }
+      }
+    },
+    {
+      "id": "10",
+      "abstain": false,
+      "methods": {
+        "dense": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "bm25": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "hybrid": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "bm25_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "hybrid_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        }
+      }
+    },
+    {
+      "id": "11",
+      "abstain": false,
+      "methods": {
+        "dense": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "bm25": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "hybrid": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "bm25_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "hybrid_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        }
+      }
+    },
+    {
+      "id": "12",
+      "abstain": false,
+      "methods": {
+        "dense": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "bm25": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "hybrid": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "bm25_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "hybrid_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        }
+      }
+    },
+    {
+      "id": "13",
+      "abstain": false,
+      "methods": {
+        "dense": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "bm25": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "hybrid": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "bm25_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "hybrid_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        }
+      }
+    },
+    {
+      "id": "14",
+      "abstain": false,
+      "methods": {
+        "dense": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "bm25": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "hybrid": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "bm25_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "hybrid_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        }
+      }
+    },
+    {
+      "id": "15",
+      "abstain": false,
+      "methods": {
+        "dense": {
+          "hit": 0.0,
+          "recall": 0.0,
+          "rr": 0.16666666666666666
+        },
+        "bm25": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "hybrid": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.25
+        },
+        "bm25_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "hybrid_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.25
+        }
+      }
+    },
+    {
+      "id": "16",
+      "abstain": false,
+      "methods": {
+        "dense": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "bm25": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "hybrid": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "bm25_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        },
+        "hybrid_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 1.0
+        }
+      }
+    },
+    {
+      "id": "17",
+      "abstain": false,
+      "methods": {
+        "dense": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.3333333333333333
+        },
+        "bm25": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "hybrid": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "bm25_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "hybrid_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        }
+      }
+    },
+    {
+      "id": "18",
+      "abstain": false,
+      "methods": {
+        "dense": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.5
+        },
+        "bm25": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.25
+        },
+        "hybrid": {
+          "hit": 0.0,
+          "recall": 0.0,
+          "rr": 0.14285714285714285
+        },
+        "bm25_stem": {
+          "hit": 1.0,
+          "recall": 1.0,
+          "rr": 0.25
+        },
+        "hybrid_stem": {
+          "hit": 0.0,
+          "recall": 0.0,
+          "rr": 0.14285714285714285
+        }
+      }
+    }
+  ]
+}
