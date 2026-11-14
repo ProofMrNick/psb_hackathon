@@ -2,36 +2,59 @@
 import { useState, useEffect } from 'react';
 import { useFetchGet } from "../hooks/useFetchGet.js";
 
-const API_URL = import.meta.env.VITE_LOCAL_API_URL;
-
 import "../../styles/SideBar.css";
 
-function SideBar() {
+
+function ChatLoader() {
+    const API_URL = import.meta.env.VITE_LOCAL_API_URL;
+    
     const { 
-        chats: data, 
-        chatsLoading: loading, 
-        chatsError: error 
+        data: chats, 
+        loading, 
+        error 
     } = useFetchGet(`${API_URL}/api/v1/chats`);
 
+
+    if (loading) {
+        return (
+            <p>Загрузка</p>
+        )
+    }
+
+    if (error) {
+        return (
+            <p>Ошибка</p>
+        );
+    }
+
+    if (chats) {
+        return (
+            chats.map((chat) => (
+                <p className="chat-elem" data-id={`${chat.id}`}>{`${chat.title}`}</p>
+            ))
+        );
+    }
+}
+
+
+
+function SideBar() {
+    const chat = {id: 0, title: "Изменения в законе"};
+
     return (
-        <div id="sidebar">
+        <div id="Sidebar">
             <img id="main-logo" src="../../../public/assets/psb_logo.svg" alt="ПСБ Ассистент" />
             <div id="buttons">
-                <div class="btn">
-                    <span class="material-symbols-outlined">chat_add_on</span>
-                    <p class="btn-p">Новый чат</p>
+                <div className="btn">
+                    <span className="material-symbols-outlined">chat_add_on</span>
+                    <p className="btn-p">Новый чат</p>
                 </div>
             </div>
             <div id="chats-container">
-                <p>Ваши чаты</p>
+                <p id="your-chats">Ваши чаты</p>
                 <div id="chat-list">
-                    { chatsLoading && <p>Загрузка</p> }
-                    { chatsError && <p>Произвошла ошибка при загрузке чатов</p> }
-                    {
-                        chats.map((chat) => (
-                            <p id={`${chat.chat_id}`} class="chat-elem">{`${chat.title}`}</p>
-                        ))
-                    }
+                    { /* <ChatLoader /> */ }
+                    <p className="chat-elem chat-elem-selected" data-id={`${chat.id}`}>{`${chat.title}`}</p>
                 </div>
             </div>
         </div>

@@ -1,0 +1,35 @@
+
+#NewChat {
+    display: grid;
+    grid-template-columns: 22% 78%;
+    grid-template-areas: 
+        "sidebar left-side";
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--color-text-dark);
+}
+
+#left-side {
+    align-self: center;
+    grid-area: left-side;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px 0;
+}
+
+#title-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 0 15px;
+    width: 100%;
+}
+
+#title-text {
+    font-size: 26px;
+    font-weight: 500;
+}
