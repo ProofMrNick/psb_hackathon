@@ -20,7 +20,7 @@ FastAPI Swagger: http://127.0.0.1:8001/docs.
 - `api.py` — POST `/api/v1/answer` и `/api/v1/search`, GET `/api/v1/documents`, `/api/v1/document`, `/health`, `/ready`.
 - `run_api.py` — запуск FastAPI без Docker с чтением `.env`.
 
-Backend получает `answer`, `sources` и `evidence`. В каждом фрагменте есть `filename` и `text` (дословный оригинальный текст), а также `start_char`/`end_char` для подсветки.
+Backend получает `answer`, `sources` и `evidence`. В `evidence` есть `filename`, исходный `text`, `start_char`/`end_char` (позиции в документе) и **`answer_start_char`/`answer_end_char`** (позиции в ответе LLM) вместе с `answer_text`. Это позволяет подсветить соответствующий ответу фрагмент и по клику открыть его первоисточник.
 
 Для локальных эмбеддингов BGE-M3 без API требуется `requirements-local.txt` (sentence-transformers/torch); с API-прокси достаточно `requirements-api.txt`.
 

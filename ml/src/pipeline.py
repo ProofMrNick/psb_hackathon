@@ -13,6 +13,7 @@ from src.retrieval.embeddings import Embedder
 from src.retrieval.hybrid import search, search_with_scores
 from src.retrieval.sparse import SparseRetriever
 from src.verification.citations import citations, owns, groups_of
+from src.verification.evidence_spans import citation_evidence
 
 
 class RAGPipeline:
@@ -102,13 +103,14 @@ class RAGPipeline:
                             'bm25_score': item['bm25_score']} for item in results]
         answer = generate_answer(question, evidence_chunks, self.client, self.settings, deadline)
         sources = self.sources_from_results(results)
-        cited = self._cited_chunk_ids(answer, results)
+        evidence = citation_evidence(answer, results, sources)
+        cited_ids = {item['chunk_id'] for item in evidence}
         for source in sources:
-            source['cited_in_answer'] = source['chunk_id'] in cited
+            source['cited_in_answer'] = source['chunk_id'] in cited_ids
         return {
             'answer': answer,
-            'sources': sources,  # All fragments passed to DeepSeek; possible evidence.
-            'evidence': [source for source in sources if source['cited_in_answer']],
+            'sources': sources,  # All retrieved fragments; not all support a claim.
+            'evidence': evidence,  # One record per cited answer span/source.
         }
 
     def answer(self, question, deadline=None):

@@ -26,6 +26,7 @@ SOURCES = {
     'src/generation/prompts.py': 'generation_prompts.py',
     'src/verification/abstention.py': 'verification_abstention.py',
     'src/verification/citations.py': 'verification_citations.py',
+    'src/verification/evidence_spans.py': 'verification_evidence_spans.py',
     'src/verification/grounding.py': 'verification_grounding.py',
 }
 
@@ -44,6 +45,7 @@ IMPORTS = {
     'src.generation.prompts': 'generation_prompts',
     'src.verification.abstention': 'verification_abstention',
     'src.verification.citations': 'verification_citations',
+    'src.verification.evidence_spans': 'verification_evidence_spans',
     'src.verification.grounding': 'verification_grounding',
 }
 RELATIVE_IMPORTS = {

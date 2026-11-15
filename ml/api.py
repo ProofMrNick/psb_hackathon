@@ -16,7 +16,7 @@ from src.pipeline import RAGPipeline
 app = FastAPI(
     title='PSB Legal RAG / ML API',
     description='Hybrid BGE-M3 + BM25 + RRF; paragraph/section-aware chunking.',
-    version='1.1.0',
+    version='1.2.0',
 )
 
 
@@ -47,10 +47,16 @@ class Source(BaseModel):
     cited_in_answer: bool = False
 
 
+class Evidence(Source):
+    answer_start_char: int = Field(ge=0)  # Start in `answer`, Unicode code points
+    answer_end_char: int = Field(ge=0)  # Exclusive end in `answer`
+    answer_text: str  # Verbatim answer[answer_start_char:answer_end_char]
+
+
 class AnswerResponse(BaseModel):
     answer: str
     sources: list[Source]  # Retrieved passages, NOT necessarily cited by the LLM
-    evidence: list[Source]  # Passages with recognizable explicit citations in answer
+    evidence: list[Evidence]  # Source + exact span of the cited claim in the answer
 
 
 class SearchResponse(BaseModel):
