@@ -8,6 +8,8 @@
     justify-content: space-between;
     align-items: center;
     color: var(--color-text-dark);
+    height: 100dvh;
+    overflow: hidden;
 }
 
 #left-side {
@@ -17,7 +19,6 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 20px 0;
 }
 
 #title-container {

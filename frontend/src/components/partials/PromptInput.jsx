@@ -1,12 +1,16 @@
 
 import { useRef, useState, useEffect } from "react";
+
+import { useFetchGet } from "../hooks/useFetchGet.js";
+import { useFetchPost } from "../hooks/useFetchPost.js";
+
 import "../../styles/PromptInput.css";
 
 
 const ONE_LINE_HEIGHT = 50;
 const MAX_HEIGHT = 200;
 
-function PromptInput() {
+function PromptInput({ onSend, disabled = false }) {
     const textareaRef = useRef(null);
     const buttonRef = useRef(null);
 
@@ -27,10 +31,9 @@ function PromptInput() {
     };
 
     const handleSend = () => {
-        if (value) {
-            // ....api stuff
-        }
-
+        if (disabled) return;
+        if (!value.trim()) return;
+        onSend(value.trim());
         setValue("");
     };
 
