@@ -85,3 +85,16 @@
     margin: 0;
     padding: 0;
 }
+
+.document-card.peach   { background-color: var(--th-peach); }
+.document-card.yellow  { background-color: var(--th-yellow); }
+.document-card.pink    { background-color: var(--th-pink); }
+.document-card.purple  { background-color: var(--th-purple); }
+.document-card.green   { background-color: var(--th-green); }
+.document-card.cyan    { background-color: var(--th-cyan); }
+
+.opened-note {
+    margin: 0;
+    font-size: 13px;
+    max-width: 110px;
+}

@@ -8,7 +8,8 @@ import App from './App.jsx'
 import './index.css'
 
 
-if (import.meta.env.VITE_TEST_API === "true") {
+const VITE_TEST_API = import.meta.env.VITE_TEST_API ? import.meta.env.VITE_TEST_API : ""
+if (VITE_TEST_API === "true") {
   window.fetch = mockFetch;
 }
 
