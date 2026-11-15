@@ -5,6 +5,8 @@ import { useParams, useLocation } from "react-router-dom";
 import { useFetchGet } from "./hooks/useFetchGet.js";
 import SideBar from "./partials/SideBar.jsx";
 import PromptInput from "./partials/PromptInput.jsx";
+import RichText from "./partials/RichText.jsx";
+import DocumentCards from "./partials/DocumentCards.jsx";
 
 import "../styles/Chat.css";
 
@@ -62,10 +64,7 @@ function Chat() {
             }
             const answer = await response.json();
 
-            setMessages((prev) => [
-                ...prev,
-                { id: `assistant-${Date.now()}`, role: "assistant", content: answer.message },
-            ]);
+            setMessages((prev) => [...prev, answer.assistant_message]);
         } catch (err) {
             setMessages((prev) => [
                 ...prev,
@@ -111,8 +110,17 @@ function Chat() {
             <div id="left-side" className="left-side-filled">
                 <div id="messages" ref={messagesListRef}>
                     {messages.map((message) => (
-                        <div key={message.id} className={`message message-${message.role}`}>
-                            {message.content}
+                        <div key={message.id} className="message-block">
+                            {message.role === "assistant" && message.documents && message.documents.length > 0 && (
+                                <DocumentCards
+                                    chatId={chat_id}
+                                    messageId={message.id}
+                                    documents={message.documents}
+                                />
+                            )}
+                            <div className={`message message-${message.role}`}>
+                                <RichText text={message.content} />
+                            </div>
                         </div>
                     ))}
                     {isSending && (

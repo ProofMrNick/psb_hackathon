@@ -26,3 +26,39 @@ html, body {
     padding: 0;
     font-family: var(--font);
 }
+
+.peach {
+    background-color: var(--th-peach);
+    padding: 2px;
+    border-radius: 5px;
+}
+
+.yellow {
+    background-color: var(--th-yellow);
+    padding: 2px;
+    border-radius: 5px;
+}
+
+.pink {
+    background-color: var(--th-pink);
+    padding: 2px;
+    border-radius: 5px;
+}
+
+.purple {
+    background-color: var(--th-purple);
+    padding: 2px;
+    border-radius: 5px;
+}
+
+.green {
+    background-color: var(--th-green);
+    padding: 2px;
+    border-radius: 5px;
+}
+
+.cyan {
+    background-color: var(--th-cyan);
+    padding: 2px;
+    border-radius: 5px;
+}
