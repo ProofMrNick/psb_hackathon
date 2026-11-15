@@ -26,6 +26,12 @@ function Chat() {
     const firstMessageSent = useRef(false);
     const historyLoaded = useRef(false);
 
+    const prefixH1 = (text) => {
+        let lines = text.split("\n");
+        lines[0] = `<h4>${lines[0]}</h4>`
+        return lines.join("\n");
+    }
+
     useEffect(() => {
         if (loading || error || historyLoaded.current) return;
         
@@ -119,7 +125,7 @@ function Chat() {
                                 />
                             )}
                             <div className={`message message-${message.role}`}>
-                                <RichText text={message.content} />
+                                <RichText text={prefixH1(message.content)} type="h4" />
                             </div>
                         </div>
                     ))}

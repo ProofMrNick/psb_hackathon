@@ -1,6 +1,6 @@
 
 function RichText({ text }) {
-    const pattern = /<span class=["'](peach|yellow|pink|purple|green|cyan)["']>(.*?)<\/span>/g;
+    const pattern = /<(span class=["'](peach|yellow|pink|purple|green|cyan)["']|h4)>([\s\S]*?)<\/(?:span|h4)>/gi;
 
     const parts = [];
     let lastIndex = 0;
@@ -8,19 +8,29 @@ function RichText({ text }) {
 
     while ((match = pattern.exec(text)) !== null) {
         if (match.index > lastIndex) {
-            parts.push(text.slice(lastIndex, match.index));  // regualr text with no <span>
+            parts.push(text.slice(lastIndex, match.index));
         }
-        parts.push(  // pasrts with <span> (found by regex)
-            <span key={`${match.index}-${match[1]}`} className={match[1]}>
-                {match[2]}
-            </span>
-        );
+
+        const openingTag = match[1];
+        const colorClass = match[2];
+        const innerText = match[3];
+
+        if (openingTag === "h4") {
+            parts.push(<h4 key={`h4-${match.index}`}>{innerText}</h4>);
+        } else {
+            parts.push(
+                <span key={`span-${match.index}`} className={colorClass}>
+                    {innerText}
+                </span>
+            );
+        }
+
         lastIndex = match.index + match[0].length;
     }
-    parts.push(text.slice(lastIndex));  // the last text fragment after the last <span>
+
+    parts.push(text.slice(lastIndex));
 
     return <>{parts}</>;
 }
-
 
 export default RichText;

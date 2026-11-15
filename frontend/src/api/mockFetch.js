@@ -1,9 +1,6 @@
-// src/api/mockFetch.js — временная заглушка вместо сервера
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// ---------- справочник документов (две карточки из макета) ----------
-// title сразу приходит с выделением, как его прислал бы LLM-сервис
 const DOCUMENTS = {
     1: {
         id: 1,
@@ -15,7 +12,6 @@ const DOCUMENTS = {
     },
 };
 
-// ---------- ЕДИНСТВЕННЫЙ ответ заглушки (как на макете) ----------
 const CANNED_ANSWER_CONTENT = `Ключевые изменения в налоговом законодательстве для малого и микро- бизнеса: главное
 
 В 2026 году действительно вступил в силу масштабный пакет поправок в Налоговый кодекс (в основном через Федеральный закон № 425-ФЗ). Часть мер — это ужесточение условий, но есть и точечные послабления, так что картина смешанная.
@@ -25,13 +21,12 @@ const CANNED_ANSWER_CONTENT = `Ключевые изменения в налог
 1. <span class="peach">НДС. Базовая ставка выросла с 20% до 22%.</span> При этом льготные ставки сохранились: 10% — для социально значимых товаров (продукты, детские товары, медикаменты), 0% — для экспорта. Для бизнеса на УСН ввели выбор: можно платить <span class="yellow">НДС по общей ставке 22%</span> (с правом вычета входящего НДС) или <span class="peach">выбрать пониженные ставки — 5% (при доходе до 272,5 млн руб.) или 7% (до 490,5 млн руб.)</span> — но без права вычета. Важный нюанс: порог, после которого возникает обязанность платить НДС, снижается поэтапно: в 2026 году — до 20 млн руб., в 2027 — до 15 млн руб., с 2028 — до 10 млн руб. Это значит, что часть предпринимателей, раньше работавших без НДС, теперь с ним столкнётся.
 2. УСН. Общий лимит дохода для сохранения права на упрощёнку проиндексировали: в 2026 году — до <span class="yellow">490,5 млн руб.</span> (было 450 млн). <span class="yellow">Увеличили лимит стоимости основных средств — до 218 млн руб.</span>`;
 
-// ---------- «база данных» в памяти ----------
+
 let nextChatId = 1;
 let nextMessageId = 1;
-const chats = [];      // { id, title }
-const messages = {};   // chat_id -> [ message ] в хронологическом порядке
+const chats = [];
+const messages = {};
 
-// обе фабрики дают СООБЩЕНИЯ ОДНОЙ ФОРМЫ — той же, что придёт с сервера
 const makeUserMessage = (content) => ({
     id: nextMessageId++,
     role: "user",
@@ -46,7 +41,6 @@ const makeAssistantMessage = () => ({
     documents: [DOCUMENTS[1], DOCUMENTS[2]],
 });
 
-// объект, похожий на ответ fetch: есть ok, status и json()
 const ok = (data) => ({
     ok: true,
     status: 200,
@@ -63,9 +57,9 @@ export async function mockFetch(url, options = {}) {
     const method = (options.method || "GET").toUpperCase();
     const body = options.body ? JSON.parse(options.body) : null;
 
-    await delay(400);   // имитация задержки сети
+    await delay(400);
 
-    // POST .../new_chat — создать чат
+    // POST .../new_chat
     if (method === "POST" && url.endsWith("/new_chat")) {
         const id = nextChatId++;
         chats.push({ id, title: body.message.slice(0, 20) });
@@ -73,12 +67,12 @@ export async function mockFetch(url, options = {}) {
         return ok({ chat_id: id });
     }
 
-    // GET .../chats — список чатов
+    // GET .../chats
     if (method === "GET" && url.endsWith("/chats")) {
         return ok({ chat_names: chats });
     }
 
-    // POST .../:chat_id/user_message — вопрос + единственный ответ заглушки
+    // POST .../:chat_id/user_message
     const sendMatch = url.match(/\/api\/v1\/(\d+)\/user_message$/);
     if (method === "POST" && sendMatch) {
         const chatId = Number(sendMatch[1]);
@@ -91,11 +85,11 @@ export async function mockFetch(url, options = {}) {
         return ok({
             conversation_id: chatId,
             user_message_id: userMessage.id,
-            assistant_message: assistantMessage,   // та же форма, что строка истории
+            assistant_message: assistantMessage,
         });
     }
 
-    // GET .../:chat_id/history — переписка в хронологическом порядке
+    // GET .../:chat_id/history
     const historyMatch = url.match(/\/api\/v1\/(\d+)\/history$/);
     if (method === "GET" && historyMatch) {
         const chatId = Number(historyMatch[1]);
@@ -103,7 +97,7 @@ export async function mockFetch(url, options = {}) {
         return ok(messages[chatId]);
     }
 
-    // GET .../:chat_id/:msg_id/:document_id — данные для split-view
+    // GET .../:chat_id/:msg_id/:document_id
     const splitMatch = url.match(/\/api\/v1\/(\d+)\/(\d+)\/(\d+)$/);
     if (method === "GET" && splitMatch) {
         const chatId = Number(splitMatch[1]);
@@ -115,14 +109,14 @@ export async function mockFetch(url, options = {}) {
         if (assistantIndex === -1) return notFound();
 
         const assistantMessage = messages[chatId][assistantIndex];
-        const userMessage = messages[chatId][assistantIndex - 1];  // вопрос перед этим ответом
+        const userMessage = messages[chatId][assistantIndex - 1];
         const openedDocument = DOCUMENTS[documentId];
         if (!userMessage || !openedDocument) return notFound();
 
         return ok({
             user_message: userMessage,
-            assistant_message: assistantMessage,   // внутри documents — ВСЕ документы ответа
-            opened_document: openedDocument,       // + сам открытый документ
+            assistant_message: assistantMessage,
+            opened_document: openedDocument,
         });
     }
 
