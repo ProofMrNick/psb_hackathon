@@ -1,4 +1,5 @@
 import hashlib
+import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -32,9 +33,17 @@ class DenseIndex:
             self.cache_path = existing
         else:
             self.matrix = normalize(self.embedder.encode(texts))
-            self.cache_dir.mkdir(parents=True, exist_ok=True)
-            self.cache_path = self.cache_dir / name
-            np.save(self.cache_path, self.matrix)
+            try:
+                self.cache_dir.mkdir(parents=True, exist_ok=True)
+                self.cache_path = self.cache_dir / name
+                np.save(self.cache_path, self.matrix)
+            except OSError:
+                # DATA_DIR can be read-only in the contest container.
+                self.cache_path = Path(tempfile.gettempdir()) / name
+                try:
+                    np.save(self.cache_path, self.matrix)
+                except OSError:
+                    self.cache_path = None
         if len(self.matrix) != len(chunks):
             raise ValueError('Embedding index and chunks do not match')
         return self

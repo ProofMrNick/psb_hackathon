@@ -44,8 +44,8 @@ def load_questions(data_dir):
     rows = []
     for row in csv.DictReader(raw.splitlines(), delimiter=delimiter):
         row = {(key or '').strip().lower(): value for key, value in row.items()}
-        if row.get('id') and row.get('question'):
-            rows.append({'id': row['id'].strip(), 'question': row['question']})
+        if row.get('id'):
+            rows.append({'id': row['id'].strip(), 'question': row.get('question') or ''})
     return rows
 
 
@@ -54,10 +54,9 @@ def main():
     started = time.time()
     deadline = started + settings.budget_seconds
 
-    pipeline = RAGPipeline(settings)
     questions = load_questions(settings.data_dir)
-    print(f'Фрагментов: {len(pipeline.chunks)} | вопросов: {len(questions)} | '
-          f'модель: {settings.model} | потоков: {settings.workers}')
+    # Build the valid fallback CSV before any network/model initialization.
+    pipeline = None
 
     answers = {}
     lock = threading.Lock()
@@ -85,9 +84,14 @@ def main():
 
     save_results()
     try:
+        pipeline = RAGPipeline(settings)
+        print(f'Фрагментов: {len(pipeline.chunks)} | вопросов: {len(questions)} | '
+              f'модель: {settings.model} | потоков: {settings.workers}')
         run_parallel(questions, process, settings.workers, deadline)
     except KeyboardInterrupt:
         print('Прервано пользователем')
+    except Exception as error:
+        print(f'Ошибка инициализации: {type(error).__name__}: {error}')
     finally:
         save_results()
 

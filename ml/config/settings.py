@@ -28,7 +28,9 @@ class Settings:
     base_url: str = field(default_factory=lambda: env(['LLM_BASE_URL', 'OPENAI_BASE_URL'], 'http://localhost:11434/v1'))
     api_key: str = field(default_factory=lambda: env(['LLM_API_KEY', 'OPENAI_API_KEY'], 'ollama'))
     model: str = field(default_factory=lambda: env(['LLM_MODEL', 'OPENAI_MODEL', 'GEN_MODEL'], 'qwen2.5:7b'))
-    embedding_model: str = field(default_factory=lambda: env(['EMB_MODEL']))
+    embedding_model: str = field(default_factory=lambda: env(['EMB_MODEL'],
+        'BAAI/bge-m3' if env(['LLM_BASE_URL', 'OPENAI_BASE_URL']) and
+        '11434' not in env(['LLM_BASE_URL', 'OPENAI_BASE_URL']) else ''))
     reranker_model: str = field(default_factory=lambda: env(['RERANKER_MODEL']))
     reranker_top_n: int = field(default_factory=lambda: int(env(['RERANKER_TOP_N'], '20')))
     data_dir: Path = field(default_factory=lambda: resolve_data_dir(env(['DATA_DIR'], 'data')))
@@ -38,7 +40,7 @@ class Settings:
     temperature: float = field(default_factory=lambda: float(env(['TEMPERATURE'], '0.1')))
     budget_seconds: int = field(default_factory=lambda: int(env(['TIME_BUDGET_SEC'], '1020')))
     workers: int = field(default_factory=lambda: int(env(['MAX_WORKERS'], '4')))
-    context_chars: int = field(default_factory=lambda: int(env(['CONTEXT_CHARS'], '1600')))
+    context_chars: int = field(default_factory=lambda: int(env(['CONTEXT_CHARS'], '2000')))
     num_ctx: int = field(default_factory=lambda: int(env(['NUM_CTX'], '8192')))
 
     @property

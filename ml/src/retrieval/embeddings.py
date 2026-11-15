@@ -23,8 +23,18 @@ class Embedder:
         if self.settings.embedding_model:
             vectors = []
             for i in range(0, len(texts), 16):
-                response = self._client.embeddings.create(model=self.settings.embedding_model, input=texts[i:i+16])
-                vectors.extend(item.embedding for item in response.data)
+                batch = texts[i:i + 16]
+                response = self._client.embeddings.create(
+                    model=self.settings.embedding_model, input=batch, encoding_format='float')
+                ordered = [None] * len(batch)
+                for pos, item in enumerate(response.data):
+                    idx = int(getattr(item, 'index', pos))
+                    if not (0 <= idx < len(batch)) or ordered[idx] is not None:
+                        raise ValueError('Embedding API returned duplicate or invalid index')
+                    ordered[idx] = item.embedding
+                if any(vec is None for vec in ordered):
+                    raise ValueError('Embedding API omitted some vectors')
+                vectors.extend(ordered)
             return np.asarray(vectors, dtype='float32')
         with self._lock:
             if self._model is None:
@@ -39,4 +49,4 @@ class Embedder:
                                       show_progress_bar=len(texts) > 32).astype('float32')
     @property
     def model_tag(self):
-        return 'bge-m3-512'
+        return 'proxy-' + self.settings.embedding_model if self.settings.embedding_model else 'bge-m3-512'
