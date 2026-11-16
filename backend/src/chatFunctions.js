@@ -12,15 +12,24 @@ function createChat(userId, firstMessage){
 }
 
 
-function saveMessage(chatId, role, content) {
+function saveUserMessage(chatId, userId, message) {
     db.prepare(`
-        INSERT INTO messages (chat_id, role, content)
-        VALUES (?, ?, ?)
-    `).run(chatId, role, content)
+        INSERT INTO messages (chat_id, user_id, role, content)
+        VALUES (?, ?, ?, ?)
+    `).run(chatId, userId, 'user', message)
 
     return chatId
 }
 
+function saveAiMessage(chatId, userId, aiResponse) {
+    const message = aiResponse.answer || "No response from AI service."
 
+    db.prepare(`
+        INSERT INTO messages (chat_id, user_id, role, content, metadata)
+        VALUES (?, ?, ?, ?, ?)
+    `).run(chatId, userId, 'assistant', message)
 
-export {createChat, saveMessage}
+    return chatId
+}
+
+export {createChat, saveUserMessage, saveAiMessage}

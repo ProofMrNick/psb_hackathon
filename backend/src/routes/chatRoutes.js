@@ -2,6 +2,8 @@ import express, { json } from 'express'
 import db from '../db.js'
 import {createChat, saveMessage} from '../chatFunctions.js'
 import callMLService from '../mlServices.js'
+
+const mlurl = process.env.ML_SERVICE_URL || 'http://localhost:5000'
 const router = express.Router()
 
 router.post('/new_chat', (req, res) => {
@@ -33,9 +35,9 @@ router.post('/:chat_id/user_message', async (req, res) => {
 
     const {chat_id} = req.params
     const userId = 0
-    const { message } = req.body
+    const { question } = req.body
 
-    saveMessage(chat_id, userId, 'user', message)
+    saveUserMessage(chat_id, userId, message)
 
     const history = db.prepare(`
         SELECT role, content FROM messages
@@ -44,17 +46,24 @@ router.post('/:chat_id/user_message', async (req, res) => {
         LIMIT 20
     `).all(chat_id).reverse()
     
-    const aiResponse = await callMLService({
-        conversation_id: chat_id,
-        user_id: userId,
-        messages: history
+    const aiResponse = await fetch(`${mlurl}/answer`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            question: question,
+            history: history,
+            top_k: 6
+        })
     })
 
-    saveMessage(chat_id, userId, 'assistant', aiResponse.content)
+
+    saveAiMessage(chat_id, userId, aiResponse)
 
     res.json({
-        conversation_id: convId,
-        message: aiResponse.content,
+        chat_id: chat_id,
+        message: aiResponse.answer,
         metadata: aiResponse.metadata
     })
 })
