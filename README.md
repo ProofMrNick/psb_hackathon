@@ -41,6 +41,50 @@ npx serve dist
 
 
 ## Как запускать Backend
+Backend — это Node.js/Express API. По умолчанию он слушает порт `5003`, а запросы за ответами и текстом документов пересылает ML API на `http://localhost:8001`.
+
+
+## Запуск backend в Docker
+
+Из папки `backend` выполните:
+
+```bash
+docker compose up --build
+```
+
+Backend будет доступен по адресу http://localhost:5003. Для остановки используйте `Ctrl+C` или `docker compose down`.
+
+## Локальный запуск без Docker
+
+Нужен Node.js версии 24 или новее. Из корня репозитория создайте `.env`, если его ещё нет:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Убедитесь, что ML API запущен и доступен на `http://localhost:8001`. Затем из папки `backend` установите зависимости и запустите сервер:
+
+```powershell
+npm ci
+$env:ML_API_URL = "http://localhost:8001"
+npm run dev
+```
+### Docker (рекомендуется)
+
+```bash
+docker compose up --build
+```
+
+Сервисы будут доступны по адресам:
+- Backend: http://localhost:5003
+
+Для локального запуска backend:
+
+```bash
+cd backend
+npm install
+npm run dev
+```
 
 ## Как запускать ML
 
