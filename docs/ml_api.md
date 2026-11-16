@@ -1,3 +1,5 @@
+# Контракт ML → backend (FastAPI, без Docker)
+
 Один запрос = один ответ; ML-сервис **не хранит чаты**. Backend хранит историю, отправляет её в каждом запросе и пересылает источники frontend для подсветки.
 
 ```text
@@ -84,7 +86,10 @@ Content-Type: application/json
       "rrf_score": 0.0327,
       "dense_score": 0.72,
       "bm25_score": 9.2,
-      "cited_in_answer": true
+      "cited_in_answer": true,
+      "answer_start_char": 0,
+      "answer_end_char": 29,
+      "answer_text": "Шесть месяцев (ст. 70 ТК РФ)."
     }
   ]
 }
@@ -92,7 +97,82 @@ Content-Type: application/json
 
 `text` — **точный фрагмент из документа** (не генерируется моделью). `filename` — оригинальное имя файла внутри архива базы знаний. Поля `start_char`/`end_char` — смещения в `GET /api/v1/document` (`end_char` не включительно); для подсветки используйте `document.text[start_char:end_char]`. Если позицию восстановить нельзя, оба поля `null`.
 
-**Разница `sources` и `evidence`:** `sources` — весь контекст, который отправлялся LLM. `evidence` — только фрагменты, которые сопоставлены с **явными ссылками** на статью/пункт в ответе. Сопоставление не является проверкой, что весь ответ логически следует из источника.
+**Разница `sources` и `evidence`:** `sources` — весь контекст, который отправлялся LLM. `evidence` — по одной записи на каждую сопоставленную **явную ссылку** в ответе (один документ может встречаться несколько раз). Сопоставление не является проверкой, что весь ответ логически следует из источника.
+
+### Подсветка фрагмента ответа LLM → фрагмент документа
+
+У каждой записи в `evidence` теперь есть **две пары координат**:
+
+| Поля | Относительно какого текста | Что выделять |
+|---|---|---|
+| `answer_start_char`, `answer_end_char` | `answer` | Утверждение/предложение, в котором LLM сослалась на документ |
+| `start_char`, `end_char` | Полный текст документа из `GET /api/v1/document` | Найденное положение первоисточника |
+
+`answer_text` равен `answer[answer_start_char:answer_end_char]` и помогает проверить корректность смещений. Позиции начинаются с нуля, `end` — **исключительно** (как в срезе Python). В обеих парах используются **Unicode code points**, поэтому для JS, если текст может включать emoji, используйте `Array.from(answer).slice(start, end).join('')`, а не обычный `answer.slice(start, end)` (последний считает UTF-16 code units).
+
+Например, для `answer = "Шесть месяцев (ст. 70 ТК РФ)."`:
+
+```json
+{
+  "filename": "законы__ТК_ст70_действующая.txt",
+  "text": "Статья 70. Испытание при приеме на работу ...",
+  "start_char": 0,
+  "end_char": 50,
+  "answer_start_char": 0,
+  "answer_end_char": 29,
+  "answer_text": "Шесть месяцев (ст. 70 ТК РФ)."
+}
+```
+
+В frontend можно покрасить `answer_text` и по клику открыть `document_id`, затем выделить `text` в исходном документе по `start_char`/`end_char`. Если два источника указаны в одном предложении, у них могут быть **совпадающие интервалы в ответе**. Если источник цитируется в двух разных предложениях, `evidence` содержит **две записи с разными интервалами**.
+
+Подсветка строится **по явным ссылкам на пункт/статью**: когда ссылка отсутствует, автоматическое сопоставление не производится и `evidence` может быть пустым. Это намеренное ограничение: цвет не следует воспринимать как доказательство фактической корректности вывода.
+
+
+### Пример подсветки на frontend (React/TypeScript)
+
+Сервер возвращает **данные**, а цвет применяет frontend. Один и тот же интервал может указывать на несколько источников:
+
+```tsx
+interface EvidenceLink {
+  document_id: string;
+  filename: string;
+  answer_start_char: number;
+  answer_end_char: number;
+  start_char: number | null;
+  end_char: number | null;
+}
+
+export function HighlightedAnswer({
+  answer, evidence, onOpenSource,
+}: {
+  answer: string;
+  evidence: EvidenceLink[];
+  onOpenSource: (sources: EvidenceLink[]) => void;
+}) {
+  const chars = Array.from(answer); // Unicode code points, как в API
+  const cuts = [...new Set([
+    0, chars.length,
+    ...evidence.flatMap(e => [e.answer_start_char, e.answer_end_char]),
+  ])].sort((a, b) => a - b);
+
+  return <div style={{ whiteSpace: 'pre-wrap' }}>
+    {cuts.slice(0, -1).map((from, index) => {
+      const to = cuts[index + 1];
+      const text = chars.slice(from, to).join('');
+      const linked = evidence.filter(e =>
+        e.answer_start_char <= from && e.answer_end_char >= to);
+      return linked.length ? (
+        <mark key={index} style={{ backgroundColor: '#fff2a8', cursor: 'pointer' }}
+              title={linked.map(e => e.filename).join(', ')}
+              onClick={() => onOpenSource(linked)}>{text}</mark>
+      ) : <span key={index}>{text}</span>;
+    })}
+  </div>;
+}
+```
+
+`onOpenSource` может вызвать `GET /api/v1/document?document_id=...` и подсветить исходный текст по `start_char` / `end_char`. Если нужно несколько цветов для разных документов, цвет можно назначать по `document_id` на frontend.
 
 `excerpt` — дублирует `text` для совместимости со старым API; для новых интеграций используйте `text`.
 
@@ -116,7 +196,7 @@ async def ask_ml(question: str, history: list[dict]):
         }
 ```
 
-Если backend и ML запущены на **разных** машинах/контейнерах, замените `127.0.0.1` на адрес ML-сервиса. Не публикуйте ML API с ключами в открытый интернет без сетевой защиты/аутентификации.
+Если backend и ML запущены на **разных** машинах/контейнерах, замените `127.0.0.1` на адрес ML-сервиса.
 
 ## Проверка
 
