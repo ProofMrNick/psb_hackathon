@@ -15,7 +15,8 @@ export const useFetchGet = (url) => {
             try {
 
                 const response = await fetch(
-                    url, signal
+                    url, 
+                    { signal }
                 );
                 if (!response.ok) {
                     throw new Error(`error: ${response.status}`);
@@ -24,7 +25,9 @@ export const useFetchGet = (url) => {
                 setData(dataJSON);
                 
             } catch(err) {
-                setError(err.message);
+                if (err.name !== "AbortError") {
+                    setError(err.message);
+                }
             } finally {
                 setLoading(false);
             }

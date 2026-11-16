@@ -4,7 +4,7 @@ import "../styles/NotFound.css";
 
 function NotFound() {
     return (
-        <div>not-found</div>
+        <div>404</div>
     );
 }
 

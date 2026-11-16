@@ -1,0 +1,100 @@
+
+.DocumentCards {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    color: var(--color-text-dark);
+}
+
+.docs-used-p {
+    font-size: 15px;
+}
+
+.document-card-container {
+    max-width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 30px;
+    padding: 15px 15px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.document-card-container::-webkit-scrollbar {
+    display: none;
+}
+
+.document-card {
+    padding: 15px 17px;
+    background-color: var(--color-white);
+    box-shadow: 0.2px 0.2px 20px 0.5px rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    height: 115px;
+    width: 190px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.document-card-upper {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.circle {
+    border-radius: 50% !important;
+    padding: 0 !important;
+    width: 18px;
+    height: 18px;
+    font-size: 12px !important;
+    font-weight: 600;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-p {
+    font-size: 13px;
+}
+
+.proceed-to {
+    font-size: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+}
+
+.proceed-to > span {
+    font-size: 15px;
+}
+
+.document-title {
+    font-size: 17px;
+    margin: 0;
+    padding: 0;
+}
+
+.document-card.peach-card   { background-color: var(--th-peach); }
+.document-card.yellow-card  { background-color: var(--th-yellow); }
+.document-card.pink-card    { background-color: var(--th-pink); }
+.document-card.purple-card  { background-color: var(--th-purple); }
+.document-card.green-card   { background-color: var(--th-green); }
+.document-card.cyan-card    { background-color: var(--th-cyan); }
+
+.opened-note {
+    margin: 0;
+    font-size: 13px;
+    max-width: 110px;
+}
