@@ -1,10 +1,11 @@
 [project]
-name = "psb-hackathon"
-version = "0.1.0"
-requires-python = ">=3.12"
+name = "psb-hackathon-ml"
+version = "0.2.0"
+requires-python = ">=3.11"
 dependencies = [
-    "openai==1.58.1",
-    "numpy==1.26.4",
-    "sentence-transformers==3.3.1",
-    "torch==2.5.1",
+    "openai==1.58.1", "numpy==2.2.0", "rank-bm25==0.2.2",
 ]
+
+[project.optional-dependencies]
+api = ["fastapi==0.115.6", "uvicorn==0.34.0"]
+local = ["sentence-transformers==3.3.1", "torch==2.6.0"]

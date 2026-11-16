@@ -1,7 +1,12 @@
 import hashlib
+import tempfile
 from pathlib import Path
+
 import numpy as np
+
 from .embeddings import normalize
+
+CHUNKER_VERSION = 'v2'
 
 
 class DenseIndex:
@@ -9,16 +14,36 @@ class DenseIndex:
         self.embedder = embedder
         self.cache_dir = Path(cache_dir)
         self.matrix = None
+        self.cache_path = None
+
+    def fingerprint(self, texts):
+        payload = '\0'.join([self.embedder.model_tag, CHUNKER_VERSION, *texts])
+        return hashlib.sha256(payload.encode()).hexdigest()[:16]
+
+    def _candidates(self, name):
+        return [self.cache_dir / name, Path.cwd() / name,
+                Path(__file__).resolve().parent / name]
 
     def build(self, chunks):
         texts = [chunk['search'] for chunk in chunks]
-        model_id = self.embedder.settings.embedding_model or 'local-bge-m3-max512'
-        fingerprint = hashlib.sha256((model_id + '\0' + '\0'.join(texts)).encode()).hexdigest()[:16]
-        self.cache_dir.mkdir(parents=True, exist_ok=True)
-        cache = self.cache_dir / f'embeddings_{fingerprint}.npy'
-        self.matrix = np.load(cache) if cache.exists() else normalize(self.embedder.encode(texts))
-        if not cache.exists():
-            np.save(cache, self.matrix)
+        name = f'embeddings_{self.fingerprint(texts)}.npy'
+        existing = next((path for path in self._candidates(name) if path.exists()), None)
+        if existing is not None:
+            self.matrix = np.load(existing)
+            self.cache_path = existing
+        else:
+            self.matrix = normalize(self.embedder.encode(texts))
+            try:
+                self.cache_dir.mkdir(parents=True, exist_ok=True)
+                self.cache_path = self.cache_dir / name
+                np.save(self.cache_path, self.matrix)
+            except OSError:
+                # DATA_DIR can be read-only in the contest container.
+                self.cache_path = Path(tempfile.gettempdir()) / name
+                try:
+                    np.save(self.cache_path, self.matrix)
+                except OSError:
+                    self.cache_path = None
         if len(self.matrix) != len(chunks):
             raise ValueError('Embedding index and chunks do not match')
         return self
@@ -26,5 +51,4 @@ class DenseIndex:
     def scores(self, query):
         if self.matrix is None:
             raise RuntimeError('Call build() before searching')
-        vector = normalize(self.embedder.encode([query]))[0]
-        return self.matrix @ vector
+        return self.matrix @ normalize(self.embedder.encode([query]))[0]

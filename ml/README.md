@@ -1,95 +1,27 @@
-# Юридический ассистент ПСБ
+# ML-сервис юридического ассистента ПСБ
 
-ИИ-ассистент для работы с юридическими документами на основе **RAG (Retrieval-Augmented Generation)**.
+Подробные инструкции: [`../README.md`](../README.md) и [`../docs/ml_api.md`](../docs/ml_api.md).
 
-## Описание
-
-Ассистент отвечает на вопросы по законодательству РФ, договорам и внутренним регламентам компании. Находит релевантные фрагменты в базе знаний и использует их для генерации ответа через LLM.
-
-## Архитектура
-
-1. **Ingestion** — загрузка документов и разбиение на чанки.
-2. **Dense Retrieval** — семантический поиск по эмбеддингам `BAAI/bge-m3`.
-3. **Sparse Retrieval** — лексический поиск с помощью `BM25`, учитывающий совпадения слов и терминов.
-4. **RRF (Reciprocal Rank Fusion)** — объединение результатов Dense и BM25 по позициям документов в рейтингах.
-5. **Generation** — генерация ответа через LLM на основе найденных фрагментов с проверками достоверности.
-
-Схема:
-
-`Документы → Чанки → Dense + BM25 → RRF → Top-k → LLM → Ответ`
-
-## Структура проекта
-
-| Путь | Назначение |
-|---|---|
-| `config/settings.py` | Настройки и переменные окружения |
-| `src/ingestion/` | Загрузка и разбиение документов |
-| `src/retrieval/embeddings.py` | Создание эмбеддингов BGE-M3 |
-| `src/retrieval/dense.py` | Векторный индекс и кеширование |
-| `src/retrieval/sparse.py` | BM25 |
-| `src/retrieval/hybrid.py` | Dense + BM25 + RRF |
-| `src/processing/` | Обработка диалогов |
-| `src/generation/` | Промпты и взаимодействие с LLM |
-| `src/verification/` | Проверки ответа |
-| `src/pipeline.py` | Объединение компонентов RAG |
-| `solution.py` | Пакетная обработка вопросов |
-
-## Запуск
-
-Все команды выполняются из директории `ml/`.
-
-Установка зависимостей:
+## Запуск без Docker
 
 ```bash
-uv sync
+python -m pip install -r requirements-api.txt
+# Скопируйте .env.example → .env и задайте доступ к OpenAI-совместимому API
+python run_api.py
 ```
 
-Или через pip:
+FastAPI Swagger: http://127.0.0.1:8001/docs.
 
-```bash
-pip install -r requirements.txt
-```
+### Компоненты
 
-Запуск:
+- `src/ingestion/` — сохранение границ статей, пунктов и абзацев, разбиение длинных абзацев по предложениям.
+- `src/retrieval/` — гибридный поиск BGE-M3 + BM25 + RRF.
+- `src/generation/` и `src/verification/` — генерация ответа и проверка ссылок.
+- `api.py` — POST `/api/v1/answer` и `/api/v1/search`, GET `/api/v1/documents`, `/api/v1/document`, `/health`, `/ready`.
+- `run_api.py` — запуск FastAPI без Docker с чтением `.env`.
 
-```bash
-python solution.py
-```
+Backend получает `answer`, `sources` и `evidence`. В `evidence` есть `filename`, исходный `text`, `start_char`/`end_char` (позиции в документе) и **`answer_start_char`/`answer_end_char`** (позиции в ответе LLM) вместе с `answer_text`. Это позволяет подсветить соответствующий ответу фрагмент и по клику открыть его первоисточник.
 
-Настройки моделей, API и путей задаются через переменные окружения (см. `config/settings.py` и `.env.example`).
+Для локальных эмбеддингов BGE-M3 без API требуется `requirements-local.txt` (sentence-transformers/torch); с API-прокси достаточно `requirements-api.txt`.
 
-## Evaluation
-
-Для анализа качества поиска используется `evaluation/inspect_retrieval.py`.
-
-Скрипт показывает результаты **Dense, BM25 и Hybrid (RRF)**, включая позиции чанков, оценки релевантности, названия документов и найденный текст.
-
-Интерактивный режим:
-
-```bash
-python evaluation/inspect_retrieval.py
-```
-
-Поиск по конкретному вопросу:
-
-```bash
-python evaluation/inspect_retrieval.py -q "Какой максимальный срок испытания для главного бухгалтера?"
-```
-
-Дополнительные параметры:
-
-- `-k 10` — количество выводимых результатов.
-- `--candidate-k 30` — количество кандидатов от каждого поисковика для RRF.
-- `--full-text` — вывод полного текста чанков.
-
-Пример результата Hybrid:
-
-```text
-HYBRID RANK: 1
-DOCUMENT: законы__ТК_ст70_действующая.txt
-RRF score: 0.032787
-Dense rank: 1
-BM25 rank: 1
-```
-
-**Планируется:** автоматическая оценка Dense, BM25 и Hybrid на размеченном наборе вопросов с помощью метрик `Hit@5`, `Recall@5` и `MRR@10`. Это позволит объективно сравнивать поисковые алгоритмы перед дальнейшей оптимизацией.
+`solution.py` остаётся отдельной CLI-точкой входа для автоматической проверки, но HTTP-сервер при его запуске не используется.
