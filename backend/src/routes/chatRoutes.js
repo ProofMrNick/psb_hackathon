@@ -1,9 +1,10 @@
 import express, { json } from 'express'
 import db from '../db.js'
-import {createChat, saveMessage} from '../chatFunctions.js'
+import {createChat, saveAiMessage, saveUserMessage} from '../chatFunctions.js'
+import {highlightAnswer} from '../otherFunctions.js'
 import callMLService from '../mlServices.js'
 
-const mlurl = process.env.ML_SERVICE_URL || 'http://localhost:5000'
+const mlurl = process.env.ML_API_URL || process.env.LLM_BASE_URL || 'http://localhost:8001'
 const router = express.Router()
 
 router.post('/new_chat', (req, res) => {
@@ -37,7 +38,7 @@ router.post('/:chat_id/user_message', async (req, res) => {
     const userId = 0
     const { question } = req.body
 
-    saveUserMessage(chat_id, userId, message)
+    saveUserMessage(chat_id, userId, question)
 
     const history = db.prepare(`
         SELECT role, content FROM messages
@@ -46,7 +47,7 @@ router.post('/:chat_id/user_message', async (req, res) => {
         LIMIT 20
     `).all(chat_id).reverse()
     
-    const aiResponse = await fetch(`${mlurl}/answer`, {
+    const aiResponse = await fetch(`${mlurl}/api/v1/answer`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -59,13 +60,34 @@ router.post('/:chat_id/user_message', async (req, res) => {
     })
 
 
-    saveAiMessage(chat_id, userId, aiResponse)
-
+    const aiMessageId = saveAiMessage(chat_id, userId, aiResponse)
+    
+    const output = db.prepare('SELECT chat_id, content, metadata FROM messages WHERE id = ?').get(aiMessageId)
     res.json({
-        chat_id: chat_id,
-        message: aiResponse.answer,
-        metadata: aiResponse.metadata
+        output: {
+            chat_id: output.chat_id,
+            msg_id: aiMessageId,
+            content: output.content,
+            metadata: JSON.parse(output.metadata)
+        }
     })
 })
 
+router.get('/:chat_id/:msg_id/?document_id=?', async (req, res) => {
+    const {chat_id, msg_id, document_id} = req.params
+
+    const getMessage = db.prepare('SELECT * FROM messages WHERE id = ?')
+    const result = getMessage.all(msg_id)
+
+    const document_text = await fetch(`${mlurl}/api/v1/document?document_id=${document_id}`, {
+        method: 'GET'
+    })
+
+    const { text } = await document_text.json()
+
+    res.send({
+        message: result,
+        document_text: text
+    })
+})
 export default router

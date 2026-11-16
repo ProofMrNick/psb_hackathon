@@ -4,9 +4,10 @@ import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 import chatRoutes from './routes/chatRoutes.js'
+import healthRoutes from './routes/healthRoutes.js'
 
 export const app = express()
-const PORT = Number(process.env.PORT || 5003)
+const PORT = Number(process.env.BACKEND_PORT || 5003)
 
 // Get the file path from the URL of the current module
 const __filename = fileURLToPath(import.meta.url)
@@ -14,8 +15,10 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 // разрешить запросы с фронта
+
+const frontendPort = process.env.FRONTEND_PORT || 5173
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: `http://localhost:${frontendPort}`,
   credentials: true,
 }));
 
@@ -28,9 +31,9 @@ app.get('/api/openapi.yaml', (_req, res) => res.sendFile(path.join(__dirname, '.
 
 // Routes
 app.use('/api/v1', chatRoutes)
+app.use('/api/health', healthRoutes)
 
 //app.use('/api/mocks', mocksRoutes)
-//app.use('/api/health', healthRoutes)
 
 export function startServer(port = PORT) {
   //fill_db()

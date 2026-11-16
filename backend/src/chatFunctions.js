@@ -1,5 +1,5 @@
 import db from './db.js'
-
+import { highlightAnswer } from './otherFunctions.js'
 function createChat(userId, firstMessage){
     const title = firstMessage // later we'll cut the string so that title would be of an appropriate length
 
@@ -22,14 +22,26 @@ function saveUserMessage(chatId, userId, message) {
 }
 
 function saveAiMessage(chatId, userId, aiResponse) {
-    const message = aiResponse.answer || "No response from AI service."
+    const {html, evidences = []} = highlightAnswer(aiResponse || { answer: "No response from AI service", evidence: [] })
 
-    db.prepare(`
+    const evidenceReferences = (evidences || []).map(evidence => ({
+        document_id: evidence.document_id,
+        start_char: evidence.start_char,
+        end_char: evidence.end_char,
+        start_answer_char: evidence.answer_start_char,
+        end_answer_char: evidence.answer_end_char
+    }))
+
+    const metadata = JSON.stringify({
+        evidence: evidenceReferences
+    })
+
+    const result = db.prepare(`
         INSERT INTO messages (chat_id, user_id, role, content, metadata)
         VALUES (?, ?, ?, ?, ?)
-    `).run(chatId, userId, 'assistant', message)
+    `).run(chatId, userId, 'assistant', html, metadata)
 
-    return chatId
+    return result.lastInsertRowid
 }
 
 export {createChat, saveUserMessage, saveAiMessage}
