@@ -4,7 +4,7 @@ import {createChat, saveAiMessage, saveUserMessage} from '../chatFunctions.js'
 import {highlightAnswer} from '../otherFunctions.js'
 import callMLService from '../mlServices.js'
 
-const mlurl = process.env.LLM_BASE_URL || 'http://localhost:5000'
+const mlurl = process.env.ML_API_URL || process.env.LLM_BASE_URL || 'http://localhost:8001'
 const router = express.Router()
 
 router.post('/new_chat', (req, res) => {
